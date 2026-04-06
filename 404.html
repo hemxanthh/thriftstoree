@@ -4,17 +4,43 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="./favicon.svg" type="image/svg+xml" />
-    <meta http-equiv="refresh" content="0; url=/" />
+    <meta http-equiv="refresh" content="0; url=/#/" />
     <title>Redirecting...</title>
     <script>
-      // Generic GitHub Pages SPA fallback without hardcoded repo name.
+      // Route-aware fallback for GitHub Pages with no hardcoded repo name.
+      var knownRoutes = {
+        'products': true,
+        'about': true,
+        'contact': true,
+        'faq': true,
+        'cart': true,
+        'login': true,
+        'register': true,
+        'forgot-password': true,
+        'reset-password': true,
+        'admin': true,
+        'shipping-info': true,
+        'returns': true,
+        'size-guide': true,
+        'privacy': true,
+        'terms': true,
+        'cookie-policy': true,
+        'test': true
+      };
+
       var parts = location.pathname.split('/').filter(Boolean);
-      var base = parts.length > 0 ? '/' + parts[0] + '/' : '/';
-      var redirectUrl = base + (location.search || '') + (location.hash || '');
+      var first = parts[0] || '';
+      var isRootHosted = !first || !!knownRoutes[first];
+      var base = isRootHosted ? '/' : '/' + first + '/';
+      var routeParts = isRootHosted ? parts : parts.slice(1);
+      var routePath = routeParts.join('/');
+      var query = location.search || '';
+      var hash = routePath ? '#/' + routePath : '#/';
+      var redirectUrl = base + hash + query;
       location.replace(redirectUrl);
     </script>
   </head>
   <body>
-    <p>Redirecting to the app... If you are not redirected automatically, <a href="/">click here</a>.</p>
+    <p>Redirecting to the app... If you are not redirected automatically, <a href="/#/">click here</a>.</p>
   </body>
 </html>

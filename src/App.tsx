@@ -1,6 +1,6 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import { Suspense } from 'react';
+import { Suspense, useEffect } from 'react';
 import Home from './pages/Home';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -31,6 +31,7 @@ import ProtectedRoute from './components/auth/ProtectedRoute';
 import Users from './pages/admin/Users';
 import Orders from './pages/admin/Orders';
 import ErrorBoundary from './components/ErrorBoundary';
+import { hasSupabaseEnv, supabase } from './lib/supabase';
 
 // Loading Skeleton Component
 const PageLoader = () => (
@@ -42,14 +43,51 @@ const PageLoader = () => (
   </div>
 );
 
+const NavigationLogger = ({ userId, userName, userEmail }: { userId: string; userName: string; userEmail: string }) => {
+  const location = useLocation();
+
+  useEffect(() => {
+    if (!hasSupabaseEnv) return;
+
+    const pagePath = `${location.pathname}${location.search}`;
+    void supabase.from('page_navigation_logs').insert({
+      user_id: userId,
+      user_name: userName,
+      user_email: userEmail,
+      page_path: pagePath,
+    });
+  }, [location.pathname, location.search, userId, userName, userEmail]);
+
+  return null;
+};
+
+const ScrollToTop = () => {
+  const location = useLocation();
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+  }, [location.pathname, location.search]);
+
+  return null;
+};
+
 // Main App Component
 const AppContent = () => {
   const { user } = useAuth();
+  const Router = import.meta.env.PROD ? HashRouter : BrowserRouter;
 
   return (
     <CartProvider>
       <Router>
         <Toaster position="top-right" />
+        <ScrollToTop />
+        {user && (
+          <NavigationLogger
+            userId={user.id}
+            userName={user.user_metadata?.full_name || user.email || 'User'}
+            userEmail={user.email || ''}
+          />
+        )}
         <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-50 flex flex-col">
           <Header />
           <main className="flex-1">

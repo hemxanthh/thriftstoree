@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useMemo, useReducer, useRef } from 'react';
 import { User } from '@supabase/supabase-js';
+import toast from 'react-hot-toast';
 import { Product } from '../types/Product';
 import { useAuth } from './AuthContext';
 import { supabase } from '../lib/supabase';
@@ -89,6 +90,32 @@ const mapDbRowsToCartItems = (rows: CartDbRow[]) =>
       quantity: row.quantity,
       selectedSize: row.selected_size,
     }));
+
+const showLoginRequiredToast = () => {
+  toast.custom((t) => (
+    <div className="max-w-sm rounded-xl border border-slate-200 bg-white shadow-lg p-4">
+      <p className="text-sm font-medium text-slate-900 mb-2">Please login to add items to cart.</p>
+      <button
+        type="button"
+        onClick={() => {
+          toast.dismiss(t.id);
+          const isHashRoute = window.location.hash.startsWith('#/');
+          const currentPath = isHashRoute
+            ? window.location.hash.replace(/^#/, '')
+            : window.location.pathname + window.location.search;
+          const redirectTo = encodeURIComponent(currentPath || '/');
+          const loginUrl = isHashRoute
+            ? `${window.location.pathname}#/login?redirect=${redirectTo}`
+            : `/login?redirect=${redirectTo}`;
+          window.location.href = loginUrl;
+        }}
+        className="text-sm font-semibold text-amber-700 hover:text-amber-800"
+      >
+        Click here to login
+      </button>
+    </div>
+  ));
+};
 
 const cartReducer = (state: CartState, action: CartAction): CartState => {
   switch (action.type) {
@@ -186,9 +213,9 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     const hydrateCart = async () => {
       if (!user) {
-        const guestItems = safeParseCart(localStorage.getItem(guestStorageKey));
+        localStorage.removeItem(guestStorageKey);
         if (!cancelled) {
-          dispatch({ type: 'SET_ITEMS', payload: { items: guestItems } });
+          dispatch({ type: 'SET_ITEMS', payload: { items: [] } });
           hydrationCompleteRef.current = true;
         }
         return;
@@ -259,6 +286,11 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const stateValue = useMemo(() => state, [state]);
 
   const addItem = (product: Product, quantity = 1) => {
+    if (!user) {
+      showLoginRequiredToast();
+      return;
+    }
+
     const normalizedSize = product.selectedSize ?? '';
     const existing = state.items.find(
       (item) => item.id === product.id && (item.selectedSize ?? '') === normalizedSize
@@ -266,24 +298,22 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
     dispatch({ type: 'ADD_ITEM', payload: { product, quantity } });
 
-    if (user) {
-      const newQuantity = (existing?.quantity || 0) + quantity;
-      void (async () => {
-        const { error } = await supabase.from('cart_items').upsert(
-          {
-            user_id: user.id,
-            product_id: product.id,
-            selected_size: normalizedSize,
-            quantity: newQuantity,
-          },
-          { onConflict: 'user_id,product_id,selected_size' }
-        );
+    const newQuantity = (existing?.quantity || 0) + quantity;
+    void (async () => {
+      const { error } = await supabase.from('cart_items').upsert(
+        {
+          user_id: user.id,
+          product_id: product.id,
+          selected_size: normalizedSize,
+          quantity: newQuantity,
+        },
+        { onConflict: 'user_id,product_id,selected_size' }
+      );
 
-        if (error) {
-          console.error('Failed to persist cart add:', error);
-        }
-      })();
-    }
+      if (error) {
+        console.error('Failed to persist cart add:', error);
+      }
+    })();
   };
 
   const removeItem = (id: string, size = '') => {

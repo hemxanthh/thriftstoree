@@ -205,6 +205,40 @@ export interface Database {
           }
         ]
       }
+      page_navigation_logs: {
+        Row: {
+          id: string
+          created_at: string
+          user_id: string
+          user_name: string | null
+          user_email: string | null
+          page_path: string
+        }
+        Insert: {
+          id?: string
+          created_at?: string
+          user_id: string
+          user_name?: string | null
+          user_email?: string | null
+          page_path: string
+        }
+        Update: {
+          id?: string
+          created_at?: string
+          user_id?: string
+          user_name?: string | null
+          user_email?: string | null
+          page_path?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'page_navigation_logs_user_id_fkey'
+            columns: ['user_id']
+            referencedRelation: 'user_profiles'
+            referencedColumns: ['id']
+          }
+        ]
+      }
     }
     Views: {
       [_ in never]: never

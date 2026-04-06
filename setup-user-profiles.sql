@@ -122,6 +122,19 @@ create index if not exists product_activity_log_created_at_idx on public.product
 create index if not exists product_activity_log_actor_user_id_idx on public.product_activity_log (actor_user_id);
 create index if not exists product_activity_log_product_id_idx on public.product_activity_log (product_id);
 
+-- Page navigation logs (tracks which user visited which page)
+create table if not exists public.page_navigation_logs (
+    id uuid primary key default gen_random_uuid(),
+    created_at timestamptz not null default timezone('utc'::text, now()),
+    user_id uuid not null references public.user_profiles(id) on delete cascade,
+    user_name text,
+    user_email text,
+    page_path text not null
+);
+
+create index if not exists page_navigation_logs_created_at_idx on public.page_navigation_logs (created_at desc);
+create index if not exists page_navigation_logs_user_id_idx on public.page_navigation_logs (user_id);
+
 -- Helper functions
 create or replace function public.handle_updated_at()
 returns trigger as $$
@@ -423,6 +436,7 @@ alter table public.order_items enable row level security;
 alter table public.cart_items enable row level security;
 alter table public.cart_activity_log enable row level security;
 alter table public.product_activity_log enable row level security;
+alter table public.page_navigation_logs enable row level security;
 
 -- Products: public read, admin write
 drop policy if exists "Public products are viewable by everyone." on public.products;
@@ -564,6 +578,19 @@ on public.product_activity_log
 for select
 using (public.is_admin_user());
 
+-- Page navigation logs: users insert/view their own, admins view all
+drop policy if exists "Users can insert their own page navigation logs." on public.page_navigation_logs;
+create policy "Users can insert their own page navigation logs."
+on public.page_navigation_logs
+for insert
+with check (auth.uid() = user_id or public.is_admin_user());
+
+drop policy if exists "Users can view their own page navigation logs." on public.page_navigation_logs;
+create policy "Users can view their own page navigation logs."
+on public.page_navigation_logs
+for select
+using (auth.uid() = user_id or public.is_admin_user());
+
 -- ============================================================================
 -- ADMIN VERIFICATION & SETUP HELPERS
 -- ============================================================================
@@ -620,5 +647,14 @@ using (public.is_admin_user());
 --   product_name,
 --   action
 -- FROM public.product_activity_log
+-- ORDER BY created_at DESC;
+
+-- 9. View page navigation logs:
+-- SELECT
+--   created_at,
+--   user_name,
+--   user_email,
+--   page_path
+-- FROM public.page_navigation_logs
 -- ORDER BY created_at DESC;
 

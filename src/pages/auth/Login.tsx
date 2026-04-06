@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { toast } from 'react-hot-toast';
 import { LockClosedIcon, EnvelopeIcon } from '@heroicons/react/24/outline';
@@ -10,6 +10,7 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { signIn } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,7 +28,9 @@ const Login = () => {
       if (error) throw error;
       
       toast.success('Logged in successfully!');
-      navigate('/');
+      const params = new URLSearchParams(location.search);
+      const redirectTo = params.get('redirect');
+      navigate(redirectTo || '/');
     } catch (error: any) {
       toast.error(error.message || 'Failed to sign in');
     } finally {
@@ -54,7 +57,7 @@ const Login = () => {
         </div>
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm -space-y-px">
-            <div>
+            <div className="relative">
               <label htmlFor="email-address" className="sr-only">
                 Email address
               </label>
@@ -73,7 +76,7 @@ const Login = () => {
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
-            <div>
+            <div className="relative">
               <label htmlFor="password" className="sr-only">
                 Password
               </label>
