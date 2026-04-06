@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { Session, User } from '@supabase/supabase-js';
-import { supabase } from '../lib/supabase';
+import { hasSupabaseEnv, supabase } from '../lib/supabase';
 
 type AuthContextType = {
   user: User | null;
@@ -38,6 +38,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [isLoading, isMobile]);
 
   useEffect(() => {
+    if (!hasSupabaseEnv) {
+      console.warn('Auth disabled: missing Supabase environment variables.');
+      setSession(null);
+      setUser(null);
+      setIsAdmin(false);
+      setIsLoading(false);
+      return;
+    }
+
     const fetchAndSetAdmin = async (userId: string) => {
       try {
         console.log('Checking admin status for user:', userId);
