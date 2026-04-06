@@ -124,7 +124,7 @@ create trigger on_auth_user_created
 
 ## 4. Set Up Environment Variables
 
-1. Create a `.env.local` file in your project root
+1. Create a `.env.local` file in your project root, or copy the values from `.env.example`
 2. Add your Supabase URL and anon key:
 
 ```env
@@ -132,7 +132,7 @@ VITE_SUPABASE_URL=your-supabase-url
 VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
 ```
 
-You can find these values in your Supabase project settings > API.
+You can find these values in your Supabase project settings > API. The workspace is currently configured for the project in `.env.local`.
 
 ## 5. Import Initial Data (Optional)
 
