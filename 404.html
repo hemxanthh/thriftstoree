@@ -1,18 +1,19 @@
 <!doctype html>
-<html>
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta http-equiv="refresh" content="0; url=/pcl-ritujeet/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="refresh" content="0; url=/" />
     <title>Redirecting...</title>
     <script>
-      // GitHub Pages SPA fallback: redirect to the base path
-      var base = '/pcl-ritujeet/';
-      // Preserve path after the base if needed by saving in a query param
+      // Generic GitHub Pages SPA fallback without hardcoded repo name.
+      var parts = location.pathname.split('/').filter(Boolean);
+      var base = parts.length > 0 ? '/' + parts[0] + '/' : '/';
       var redirectUrl = base + (location.search || '') + (location.hash || '');
       location.replace(redirectUrl);
     </script>
   </head>
   <body>
-    <p>Redirecting to the app… If you are not redirected automatically, <a href="/pcl-ritujeet/">click here</a>.</p>
+    <p>Redirecting to the app... If you are not redirected automatically, <a href="/">click here</a>.</p>
   </body>
 </html>
