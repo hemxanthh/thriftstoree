@@ -42,8 +42,11 @@ const Login = () => {
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-md w-full space-y-8">
         <div>
+          <p className="text-center text-xs tracking-[0.2em] uppercase text-pink-500 font-semibold">
+            Thrift Store
+          </p>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
-            Sign in to your account
+            Sign in to continue shopping
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
             Or{' '}

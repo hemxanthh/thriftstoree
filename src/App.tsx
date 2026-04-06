@@ -110,7 +110,7 @@ const AppContent = () => {
             <Suspense fallback={<PageLoader />}>
               <Routes>
                 {/* Public Routes */}
-                <Route path="/" element={<Home />} />
+                <Route path="/" element={user ? <Home /> : <Navigate to="/login" replace />} />
                 <Route path="/products" element={<Products />} />
                 <Route path="/products/:id" element={<ProductDetail />} />
                 <Route path="/cart" element={<Cart />} />
