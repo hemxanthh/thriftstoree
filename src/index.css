@@ -13,7 +13,7 @@
   }
 
   body {
-    @apply bg-gray-50 text-gray-900 dark:bg-gray-900 dark:text-gray-100;
+    @apply bg-rose-50 text-slate-900;
     font-family: 'Inter', sans-serif;
   }
   /* Improve native select/option contrast on all platforms */
@@ -102,6 +102,36 @@
       no-repeat,
       repeat,
       no-repeat;
+  }
+
+  .theme-luxury-pink {
+    background: linear-gradient(180deg, #fff7fb 0%, #fffdfd 42%, #fff0f6 100%);
+    color: #1f2937;
+  }
+
+  .theme-luxury-pink :is([class*='bg-neutral-950'], [class*='bg-slate-950'], [class*='bg-gray-950'], [class*='bg-neutral-900'], [class*='bg-slate-900'], [class*='bg-gray-900']) {
+    background-color: rgba(255, 255, 255, 0.8) !important;
+    background-image: none !important;
+  }
+
+  .theme-luxury-pink :is([class*='bg-white/5'], [class*='bg-white/10'], [class*='bg-white/15'], [class*='bg-white/20'], [class*='bg-white/30']) {
+    background-color: rgba(255, 255, 255, 0.78) !important;
+  }
+
+  .theme-luxury-pink :is([class*='border-white/'], [class*='border-black/']) {
+    border-color: rgba(244, 114, 182, 0.18) !important;
+  }
+
+  .theme-luxury-pink :is([class*='text-white'], [class*='text-neutral-100'], [class*='text-neutral-200'], [class*='text-neutral-300'], [class*='text-slate-100'], [class*='text-slate-200'], [class*='text-slate-300']) {
+    color: #374151 !important;
+  }
+
+  .theme-luxury-pink :is([class*='text-amber-700'], [class*='text-amber-800'], [class*='text-amber-900']) {
+    color: #9d174d !important;
+  }
+
+  .theme-luxury-pink :is([class*='bg-amber-50'], [class*='bg-amber-100']) {
+    background-color: rgba(252, 231, 243, 0.92) !important;
   }
 
   /* Retro window card styling */

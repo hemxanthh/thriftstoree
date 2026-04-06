@@ -76,6 +76,76 @@ const AppContent = () => {
   const { user } = useAuth();
   const Router = import.meta.env.PROD ? HashRouter : BrowserRouter;
 
+  const AppShell = () => {
+    const location = useLocation();
+    const isHome = location.pathname === '/';
+
+    return (
+      <div
+        className={
+          isHome
+            ? 'min-h-screen bg-gradient-to-b from-slate-50 to-slate-50 flex flex-col'
+            : 'theme-luxury-pink min-h-screen bg-gradient-to-b from-rose-50 via-white to-pink-50 flex flex-col'
+        }
+      >
+        <Header />
+        <main className="flex-1">
+          <ErrorBoundary>
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+                {/* Public Routes */}
+                <Route path="/" element={<Home />} />
+                <Route path="/products" element={<Products />} />
+                <Route path="/products/:id" element={<ProductDetail />} />
+                <Route path="/cart" element={<Cart />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/faq" element={<FAQ />} />
+                <Route path="/shipping-info" element={<ShippingInfo />} />
+                <Route path="/returns" element={<Returns />} />
+                <Route path="/size-guide" element={<SizeGuide />} />
+                <Route path="/privacy" element={<Privacy />} />
+                <Route path="/terms" element={<Terms />} />
+                <Route path="/cookie-policy" element={<CookiePolicy />} />
+                <Route path="/test" element={<TestConnection />} />
+
+                {/* Auth Routes */}
+                <Route path="/login" element={user ? <Navigate to="/" /> : <Login />} />
+                <Route path="/register" element={user ? <Navigate to="/" /> : <Register />} />
+                <Route path="/forgot-password" element={user ? <Navigate to="/" /> : <ForgotPassword />} />
+                <Route path="/reset-password" element={user ? <Navigate to="/" /> : <ResetPassword />} />
+
+                {/* Admin Routes */}
+                <Route
+                  path="/admin/*"
+                  element={
+                    <ProtectedRoute adminOnly>
+                      <Suspense fallback={<PageLoader />}>
+                        <Routes>
+                          <Route index element={<Dashboard />} />
+                          <Route path="products" element={<ProductManagement />} />
+                          <Route path="products/new" element={<ProductForm />} />
+                          <Route path="products/edit/:id" element={<ProductForm />} />
+                          <Route path="users" element={<Users />} />
+                          <Route path="orders" element={<Orders />} />
+                          <Route path="*" element={<Navigate to="/admin" replace />} />
+                        </Routes>
+                      </Suspense>
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* 404 Route */}
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </Suspense>
+          </ErrorBoundary>
+        </main>
+        <Footer />
+      </div>
+    );
+  };
+
   return (
     <CartProvider>
       <Router>
@@ -88,62 +158,7 @@ const AppContent = () => {
             userEmail={user.email || ''}
           />
         )}
-        <div className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-50 flex flex-col">
-          <Header />
-          <main className="flex-1">
-            <ErrorBoundary>
-              <Suspense fallback={<PageLoader />}>
-                <Routes>
-                  {/* Public Routes */}
-                  <Route path="/" element={<Home />} />
-                  <Route path="/products" element={<Products />} />
-                  <Route path="/products/:id" element={<ProductDetail />} />
-                  <Route path="/cart" element={<Cart />} />
-                  <Route path="/about" element={<About />} />
-                  <Route path="/contact" element={<Contact />} />
-                  <Route path="/faq" element={<FAQ />} />
-                  <Route path="/shipping-info" element={<ShippingInfo />} />
-                  <Route path="/returns" element={<Returns />} />
-                  <Route path="/size-guide" element={<SizeGuide />} />
-                  <Route path="/privacy" element={<Privacy />} />
-                  <Route path="/terms" element={<Terms />} />
-                  <Route path="/cookie-policy" element={<CookiePolicy />} />
-                  <Route path="/test" element={<TestConnection />} />
-                  
-                  {/* Auth Routes */}
-                  <Route path="/login" element={user ? <Navigate to="/" /> : <Login />} />
-                  <Route path="/register" element={user ? <Navigate to="/" /> : <Register />} />
-                  <Route path="/forgot-password" element={user ? <Navigate to="/" /> : <ForgotPassword />} />
-                  <Route path="/reset-password" element={user ? <Navigate to="/" /> : <ResetPassword />} />
-                  
-                  {/* Admin Routes */}
-                  <Route
-                    path="/admin/*"
-                    element={
-                      <ProtectedRoute adminOnly>
-                        <Suspense fallback={<PageLoader />}>
-                          <Routes>
-                            <Route index element={<Dashboard />} />
-                            <Route path="products" element={<ProductManagement />} />
-                            <Route path="products/new" element={<ProductForm />} />
-                            <Route path="products/edit/:id" element={<ProductForm />} />
-                            <Route path="users" element={<Users />} />
-                            <Route path="orders" element={<Orders />} />
-                            <Route path="*" element={<Navigate to="/admin" replace />} />
-                          </Routes>
-                        </Suspense>
-                      </ProtectedRoute>
-                    }
-                  />
-                  
-                  {/* 404 Route */}
-                  <Route path="*" element={<NotFound />} />
-                </Routes>
-              </Suspense>
-            </ErrorBoundary>
-          </main>
-          <Footer />
-        </div>
+        <AppShell />
       </Router>
     </CartProvider>
   );
