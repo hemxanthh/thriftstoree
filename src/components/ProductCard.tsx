@@ -32,11 +32,13 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
             <div className="flex space-x-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
               <button
                 onClick={handleAddToCart}
+                title={`Quick add ${product.name} to cart`}
+                aria-label={`Quick add ${product.name} to cart`}
                 className="p-3 bg-white rounded-full shadow-lg hover:bg-neutral-100 transition-colors"
               >
                 <ShoppingBag className="h-5 w-5 text-neutral-900" />
               </button>
-              <button className="p-3 bg-white rounded-full shadow-lg hover:bg-neutral-100 transition-colors">
+              <button className="p-3 bg-white rounded-full shadow-lg hover:bg-neutral-100 transition-colors" title="Add to wishlist" aria-label="Add to wishlist">
                 <Heart className="h-5 w-5 text-neutral-900" />
               </button>
             </div>
@@ -52,15 +54,28 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       </Link>
 
       <div className="space-y-1">
-        <h3 className="text-sm font-medium text-neutral-900 truncate group-hover:text-neutral-600 transition-colors">
-          {product.name}
-        </h3>
+        <Link to={`/products/${product.id}`} className="block">
+          <h3 className="text-sm font-medium text-neutral-900 truncate group-hover:text-neutral-600 transition-colors hover:underline underline-offset-2">
+            {product.name}
+          </h3>
+        </Link>
         <p className="text-xs text-neutral-500 uppercase tracking-wide">
           {product.category}
         </p>
-        <p className="text-lg font-medium text-neutral-900">
-          {formatINR(product.price)}
-        </p>
+        <div className="flex items-center justify-between pt-1">
+          <p className="text-lg font-medium text-neutral-900">
+            {formatINR(product.price)}
+          </p>
+          <button
+            onClick={handleAddToCart}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-neutral-900 text-white text-xs font-medium hover:bg-neutral-800 transition-colors"
+            title={`Add ${product.name} to cart`}
+            aria-label={`Add ${product.name} to cart`}
+          >
+            <ShoppingBag className="h-3.5 w-3.5" />
+            Add
+          </button>
+        </div>
       </div>
     </div>
   );

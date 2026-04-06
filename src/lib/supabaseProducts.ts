@@ -20,7 +20,7 @@ const checkSupabaseConnection = async (): Promise<boolean> => {
   try {
     // Simple connection test
     const { error } = await Promise.race([
-      supabase.from('products').select('count').limit(1),
+      supabase.from('products').select('id').limit(1),
       new Promise((_, reject) => setTimeout(() => reject(new Error('Connection timeout')), 3000))
     ]) as any;
     
@@ -75,6 +75,15 @@ export const fetchProducts = async (): Promise<Product[]> => {
       })) as any;
     }
 
+    if (!data || data.length === 0) {
+      console.warn('Supabase returned no products, using static fallback products');
+      return allProducts.map(product => ({
+        ...product,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })) as any;
+    }
+
     console.log('Products fetched successfully:', data?.length || 0);
     return data || [];
   } catch (error) {
@@ -91,18 +100,47 @@ export const fetchProducts = async (): Promise<Product[]> => {
 };
 
 export const fetchProductById = async (id: string): Promise<Product | null> => {
-  const { data, error } = await supabase
-    .from('products')
-    .select('*')
-    .eq('id', id)
-    .single();
+  try {
+    const isAvailable = await checkSupabaseConnection();
 
-  if (error) {
-    console.error('Error fetching product:', error);
-    return null;
+    if (!isAvailable) {
+      const fallback = allProducts.find((p) => p.id === id);
+      if (!fallback) return null;
+      return {
+        ...fallback,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      } as any;
+    }
+
+    const { data, error } = await supabase
+      .from('products')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error || !data) {
+      console.error('Error fetching product:', error);
+      const fallback = allProducts.find((p) => p.id === id);
+      if (!fallback) return null;
+      return {
+        ...fallback,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      } as any;
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Exception fetching product by id:', error);
+    const fallback = allProducts.find((p) => p.id === id);
+    if (!fallback) return null;
+    return {
+      ...fallback,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    } as any;
   }
-
-  return data;
 };
 
 export const fetchProductsByCategory = async (category: string): Promise<Product[]> => {
@@ -134,6 +172,16 @@ export const fetchProductsByCategory = async (category: string): Promise<Product
       console.error(`Error fetching ${category} products:`, error);
       // Mark Supabase as unavailable and return filtered static products
       isSupabaseAvailable = false;
+      const filtered = allProducts.filter(p => p.category === category);
+      return filtered.map(product => ({
+        ...product,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })) as any;
+    }
+
+    if (!data || data.length === 0) {
+      console.warn(`Supabase returned no ${category} products, using static fallback products`);
       const filtered = allProducts.filter(p => p.category === category);
       return filtered.map(product => ({
         ...product,

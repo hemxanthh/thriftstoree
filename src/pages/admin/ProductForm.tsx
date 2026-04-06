@@ -163,38 +163,38 @@ const ProductForm = () => {
 
   if (loading && isEditing) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-rose-50 via-pink-50 to-white flex items-center justify-center">
         <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border border-white/30 border-t-white"></div>
-          <p className="mt-4 text-white/60 font-medium">Loading product...</p>
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border border-rose-200 border-t-rose-500"></div>
+          <p className="mt-4 text-slate-600 font-medium">Loading product...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 py-12 px-4 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-rose-50 via-pink-50 to-white py-12 px-4 relative overflow-hidden">
       {/* Animated background elements */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-cyan-500/5 rounded-full blur-3xl"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-500/5 rounded-full blur-3xl"></div>
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-rose-300/30 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-pink-200/30 rounded-full blur-3xl"></div>
       </div>
 
       <div className="max-w-2xl mx-auto relative z-10">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">
+          <h1 className="text-4xl font-bold text-slate-900 mb-2">
             {isEditing ? 'Edit Product' : 'Add New Product'}
           </h1>
-          <p className="text-white/50">Manage your thrift store inventory</p>
+          <p className="text-slate-600">Manage your thrift store inventory</p>
         </div>
 
         {/* Error Alert */}
         {error && (
-          <div className="mb-6 p-4 rounded-xl bg-red-500/10 border border-red-500/30 backdrop-blur">
-            <p className="text-red-300 font-medium">⚠️ {error}</p>
+          <div className="mb-6 p-4 rounded-xl bg-red-50/90 border border-red-200 backdrop-blur">
+            <p className="text-red-700 font-medium">⚠️ {error}</p>
             {error.includes('admin') && (
-              <p className="text-red-200/70 text-sm mt-2">
+              <p className="text-red-600 text-sm mt-2">
                 See setup-user-profiles.sql for admin setup instructions, or ask your administrator.
               </p>
             )}
@@ -203,17 +203,17 @@ const ProductForm = () => {
 
         {/* Success Message */}
         {success && (
-          <div className="mb-6 p-4 rounded-xl bg-green-500/10 border border-green-500/30 backdrop-blur">
-            <p className="text-green-300 font-medium">✓ Product {isEditing ? 'updated' : 'created'} successfully!</p>
+          <div className="mb-6 p-4 rounded-xl bg-emerald-50/90 border border-emerald-200 backdrop-blur">
+            <p className="text-emerald-700 font-medium">✓ Product {isEditing ? 'updated' : 'created'} successfully!</p>
           </div>
         )}
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="rounded-2xl bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl border border-white/20 overflow-hidden shadow-2xl">
+        <form onSubmit={handleSubmit} className="rounded-2xl bg-white/80 backdrop-blur-xl border border-rose-200/70 overflow-hidden shadow-[0_20px_60px_rgba(244,114,182,0.14)]">
           <div className="p-8 space-y-6">
             {/* Product Name */}
             <div>
-              <label htmlFor="name" className="block text-sm font-semibold text-white mb-3">
+              <label htmlFor="name" className="block text-sm font-semibold text-slate-800 mb-3">
                 Product Name *
               </label>
               <input
@@ -224,14 +224,14 @@ const ProductForm = () => {
                 onChange={handleChange}
                 placeholder="e.g., Vintage Denim Jacket"
                 required
-                className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/20 focus:border-white/40 focus:bg-white/10 outline-none transition text-white placeholder-white/40 backdrop-blur"
+                className="w-full px-4 py-3 rounded-lg bg-white/90 border border-rose-200 focus:border-rose-300 focus:ring-2 focus:ring-rose-100 outline-none transition text-slate-900 placeholder-slate-400 backdrop-blur"
               />
             </div>
 
             {/* Price & Category Grid */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label htmlFor="price" className="block text-sm font-semibold text-white mb-3">
+                <label htmlFor="price" className="block text-sm font-semibold text-slate-800 mb-3">
                   Price (₹) *
                 </label>
                 <input
@@ -244,12 +244,12 @@ const ProductForm = () => {
                   step="0.01"
                   min="0"
                   required
-                  className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/20 focus:border-white/40 focus:bg-white/10 outline-none transition text-white placeholder-white/40 backdrop-blur"
+                  className="w-full px-4 py-3 rounded-lg bg-white/90 border border-rose-200 focus:border-rose-300 focus:ring-2 focus:ring-rose-100 outline-none transition text-slate-900 placeholder-slate-400 backdrop-blur"
                 />
               </div>
 
               <div>
-                <label htmlFor="category" className="block text-sm font-semibold text-white mb-3">
+                <label htmlFor="category" className="block text-sm font-semibold text-slate-800 mb-3">
                   Category *
                 </label>
                 <select
@@ -258,7 +258,7 @@ const ProductForm = () => {
                   value={product.category}
                   onChange={handleChange}
                   required
-                  className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/20 focus:border-white/40 focus:bg-white/10 outline-none transition text-white backdrop-blur"
+                  className="w-full px-4 py-3 rounded-lg bg-white/90 border border-rose-200 focus:border-rose-300 focus:ring-2 focus:ring-rose-100 outline-none transition text-slate-900 backdrop-blur"
                 >
                   <option value="">Select category</option>
                   <option value="clothing">Clothing</option>
@@ -274,7 +274,7 @@ const ProductForm = () => {
 
             {/* Description */}
             <div>
-              <label htmlFor="description" className="block text-sm font-semibold text-white mb-3">
+              <label htmlFor="description" className="block text-sm font-semibold text-slate-800 mb-3">
                 Description
               </label>
               <textarea
@@ -284,13 +284,13 @@ const ProductForm = () => {
                 onChange={handleChange}
                 placeholder="Describe your product..."
                 rows={4}
-                className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/20 focus:border-white/40 focus:bg-white/10 outline-none transition text-white placeholder-white/40 backdrop-blur resize-none"
+                className="w-full px-4 py-3 rounded-lg bg-white/90 border border-rose-200 focus:border-rose-300 focus:ring-2 focus:ring-rose-100 outline-none transition text-slate-900 placeholder-slate-400 backdrop-blur resize-none"
               />
             </div>
 
             {/* Image Section */}
-            <div className="space-y-4 bg-white/5 p-6 rounded-xl border border-white/10 backdrop-blur">
-              <h3 className="text-sm font-semibold text-white">Product Image *</h3>
+            <div className="space-y-4 bg-rose-50/70 p-6 rounded-xl border border-rose-200 backdrop-blur">
+              <h3 className="text-sm font-semibold text-slate-800">Product Image *</h3>
 
               {/* Image Preview */}
               {imagePreview && (
@@ -298,7 +298,7 @@ const ProductForm = () => {
                   <img
                     src={imagePreview}
                     alt="Preview"
-                    className="w-full h-48 object-cover rounded-lg border border-white/20 group-hover:border-white/40 transition"
+                    className="w-full h-48 object-cover rounded-lg border border-rose-200 group-hover:border-rose-300 transition"
                   />
                   <button
                     type="button"
@@ -307,7 +307,7 @@ const ProductForm = () => {
                       setImageFile(null);
                       setProduct({ ...product, image: '' });
                     }}
-                    className="absolute top-2 right-2 bg-red-500/80 hover:bg-red-500 text-white rounded-full p-2 transition backdrop-blur"
+                    className="absolute top-2 right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-2 transition"
                   >
                     ✕
                   </button>
@@ -316,7 +316,7 @@ const ProductForm = () => {
 
               {/* Upload Input */}
               <div>
-                <label htmlFor="image-file" className="block text-sm font-medium text-white/80 mb-2">
+                <label htmlFor="image-file" className="block text-sm font-medium text-slate-700 mb-2">
                   Upload Image
                 </label>
                 <input
@@ -324,18 +324,18 @@ const ProductForm = () => {
                   id="image-file"
                   accept="image/*"
                   onChange={handleImageSelect}
-                  className="block w-full text-sm text-white/60
+                  className="block w-full text-sm text-slate-500
                     file:mr-4 file:py-2 file:px-4 file:rounded-lg
                     file:border-0 file:text-sm file:font-semibold
-                    file:bg-cyan-500/20 file:text-cyan-300
-                    hover:file:bg-cyan-500/30 file:transition file:backdrop-blur"
+                    file:bg-rose-100 file:text-rose-700
+                    hover:file:bg-rose-200 file:transition"
                 />
-                <p className="text-xs text-white/40 mt-2">PNG, JPG up to 5MB</p>
+                <p className="text-xs text-slate-500 mt-2">PNG, JPG up to 5MB</p>
               </div>
 
               {/* URL Input */}
               <div>
-                <label htmlFor="image" className="block text-sm font-medium text-white/80 mb-2">
+                <label htmlFor="image" className="block text-sm font-medium text-slate-700 mb-2">
                   Or Image URL
                 </label>
                 <input
@@ -345,39 +345,36 @@ const ProductForm = () => {
                   placeholder="https://example.com/image.jpg"
                   value={product.image && !imageFile ? product.image : ''}
                   onChange={handleChange}
-                  className="w-full px-4 py-3 rounded-lg bg-white/5 border border-white/20 focus:border-white/40 focus:bg-white/10 outline-none transition text-white placeholder-white/40 backdrop-blur"
+                  className="w-full px-4 py-3 rounded-lg bg-white/90 border border-rose-200 focus:border-rose-300 focus:ring-2 focus:ring-rose-100 outline-none transition text-slate-900 placeholder-slate-400 backdrop-blur"
                 />
               </div>
 
               {/* Upload Progress */}
               {uploadProgress > 0 && uploadProgress < 100 && (
-                <div className="w-full bg-white/10 rounded-full h-2 overflow-hidden">
-                    {/* Dynamic width calculated in real-time - inline style necessary for real-time progress */}
-                    {/* eslint-disable-next-line react/no-unknown-property */}
-                    <div
-                      className="bg-gradient-to-r from-cyan-500 to-blue-500 h-2 transition-all duration-300"
-                      style={{ width: `${uploadProgress}%` }}
-                  />
-                </div>
+                <progress
+                  value={uploadProgress}
+                  max={100}
+                  className="w-full h-2 rounded-full overflow-hidden accent-rose-500"
+                />
               )}
             </div>
           </div>
 
           {/* Form Actions */}
-          <div className="bg-white/5 px-8 py-4 flex justify-end gap-3 border-t border-white/10 backdrop-blur">
+          <div className="bg-white/70 px-8 py-4 flex justify-end gap-3 border-t border-rose-200/70 backdrop-blur">
             <button
               type="button"
               onClick={() => navigate('/admin/products')}
-              className="px-6 py-2 rounded-lg border border-white/20 text-white/80 font-medium hover:bg-white/5 hover:border-white/40 transition backdrop-blur"
+              className="px-6 py-2 rounded-lg border border-rose-200 text-slate-700 font-medium hover:bg-rose-50 transition"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="px-6 py-2 rounded-lg bg-gradient-to-r from-cyan-500/30 to-blue-500/30 text-white font-medium hover:from-cyan-500/40 hover:to-blue-500/40 disabled:opacity-50 disabled:cursor-not-allowed transition backdrop-blur border border-cyan-500/30 hover:border-cyan-500/50 flex items-center gap-2"
+              className="px-6 py-2 rounded-lg bg-gradient-to-r from-rose-500 to-pink-500 text-white font-medium hover:from-rose-600 hover:to-pink-600 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-md shadow-rose-200/60 flex items-center gap-2"
             >
-              {loading && <div className="animate-spin rounded-full h-4 w-4 border border-white/30 border-t-white" />}
+              {loading && <div className="animate-spin rounded-full h-4 w-4 border border-white/40 border-t-white" />}
               {loading ? 'Saving...' : isEditing ? 'Update Product' : 'Add Product'}
             </button>
           </div>

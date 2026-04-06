@@ -1,6 +1,6 @@
 import { BrowserRouter, HashRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { Toaster } from 'react-hot-toast';
-import { Suspense, useEffect } from 'react';
+import { Suspense, useEffect, useRef } from 'react';
 import Home from './pages/Home';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -45,17 +45,33 @@ const PageLoader = () => (
 
 const NavigationLogger = ({ userId, userName, userEmail }: { userId: string; userName: string; userEmail: string }) => {
   const location = useLocation();
+  const lastLoggedPathRef = useRef<string>('');
+  const lastLoggedAtRef = useRef<number>(0);
 
   useEffect(() => {
     if (!hasSupabaseEnv) return;
 
     const pagePath = `${location.pathname}${location.search}`;
-    void supabase.from('page_navigation_logs').insert({
-      user_id: userId,
-      user_name: userName,
-      user_email: userEmail,
-      page_path: pagePath,
-    });
+    const now = Date.now();
+    if (lastLoggedPathRef.current === pagePath && now - lastLoggedAtRef.current < 1500) {
+      return;
+    }
+
+    lastLoggedPathRef.current = pagePath;
+    lastLoggedAtRef.current = now;
+
+    void (async () => {
+      const { error } = await supabase.from('page_navigation_logs').insert({
+        user_id: userId,
+        user_name: userName,
+        user_email: userEmail,
+        page_path: pagePath,
+      });
+
+      if (error) {
+        console.error('Navigation log insert failed:', error.message);
+      }
+    })();
   }, [location.pathname, location.search, userId, userName, userEmail]);
 
   return null;
