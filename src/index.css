@@ -79,6 +79,31 @@
       no-repeat;
   }
 
+  /* Softer header version without the split pink panel */
+  .bg-retro-header {
+    background-color: #fdfbf6;
+    background-image:
+      radial-gradient(circle at 10% 10%, rgba(0,0,0,0.08) 0 8%, transparent 8.5%),
+      radial-gradient(circle at 90% 18%, rgba(0,0,0,0.08) 0 8%, transparent 8.5%),
+      radial-gradient(rgba(0,0,0,0.11) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 183, 77, 0.12), rgba(255, 255, 255, 0));
+    background-size:
+      140px 140px,
+      120px 120px,
+      6px 6px,
+      100% 100%;
+    background-position:
+      0% 0%,
+      100% 10%,
+      50% 0%,
+      0% 0%;
+    background-repeat:
+      no-repeat,
+      no-repeat,
+      repeat,
+      no-repeat;
+  }
+
   /* Retro window card styling */
   .retro-window {
     @apply rounded-md border border-black/20 shadow-[6px_6px_0_0_rgba(0,0,0,0.9)] overflow-hidden bg-white;

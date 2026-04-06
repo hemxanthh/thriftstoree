@@ -6,6 +6,8 @@ import { fetchProductById } from '../lib/supabaseProducts';
 import { supabase } from '../lib/supabase';
 import { formatINR } from '../lib/currency';
 
+const MAX_QUANTITY = 5;
+
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { addItem } = useCart();
@@ -87,7 +89,7 @@ const ProductDetail = () => {
                 <p className="text-sm text-neutral-500 uppercase tracking-wide">
                   {product.category}
                 </p>
-                <button className="p-2 text-neutral-400 hover:text-red-500 transition-colors">
+                <button className="p-2 text-neutral-400 hover:text-red-500 transition-colors" aria-label="Add to wishlist" title="Add to wishlist">
                   <Heart className="h-5 w-5" />
                 </button>
               </div>
@@ -131,14 +133,15 @@ const ProductDetail = () => {
               <div className="flex items-center space-x-3">
                 <button
                   onClick={() => setQuantity(Math.max(1, quantity - 1))}
-                  className="w-10 h-10 border border-neutral-300 rounded flex items-center justify-center hover:bg-neutral-50 transition-colors"
+                  className="w-10 h-10 border border-neutral-400 rounded flex items-center justify-center bg-white text-neutral-950 hover:bg-neutral-50 transition-colors shadow-sm"
                 >
                   -
                 </button>
-                <span className="text-lg font-medium w-12 text-center">{quantity}</span>
+                <span className="text-lg font-semibold w-12 text-center text-neutral-950 opacity-100">{quantity}</span>
                 <button
-                  onClick={() => setQuantity(quantity + 1)}
-                  className="w-10 h-10 border border-neutral-300 rounded flex items-center justify-center hover:bg-neutral-50 transition-colors"
+                  onClick={() => setQuantity(Math.min(MAX_QUANTITY, quantity + 1))}
+                  disabled={quantity >= MAX_QUANTITY}
+                  className="w-10 h-10 border border-neutral-400 rounded flex items-center justify-center bg-white text-neutral-950 hover:bg-neutral-50 transition-colors shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
                 >
                   +
                 </button>

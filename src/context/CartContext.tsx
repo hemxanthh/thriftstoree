@@ -43,6 +43,7 @@ type CartAction =
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 const CART_STORAGE_PREFIX = 'thriftstore-cart';
+const MAX_CART_QUANTITY = 5;
 
 const getCartStorageKey = (user: User | null) => `${CART_STORAGE_PREFIX}:${user?.id || 'guest'}`;
 
@@ -128,13 +129,15 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
 
       let newItems;
       if (existingItemIndex > -1) {
+        const existingItem = state.items[existingItemIndex];
+        const nextQuantity = Math.min(MAX_CART_QUANTITY, existingItem.quantity + quantity);
         newItems = state.items.map((item, index) =>
           index === existingItemIndex
-            ? { ...item, quantity: item.quantity + quantity }
+            ? { ...item, quantity: nextQuantity }
             : item
         );
       } else {
-        newItems = [...state.items, { ...product, selectedSize: normalizedSize, quantity }];
+        newItems = [...state.items, { ...product, selectedSize: normalizedSize, quantity: Math.min(MAX_CART_QUANTITY, quantity) }];
       }
 
       return {
@@ -165,7 +168,7 @@ const cartReducer = (state: CartState, action: CartAction): CartState => {
       const normalizedSize = size ?? '';
       const newItems = state.items.map((item) =>
         item.id === id && (item.selectedSize ?? '') === normalizedSize
-          ? { ...item, quantity }
+          ? { ...item, quantity: Math.min(MAX_CART_QUANTITY, quantity) }
           : item
       );
 
@@ -295,17 +298,22 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const existing = state.items.find(
       (item) => item.id === product.id && (item.selectedSize ?? '') === normalizedSize
     );
+    const nextQuantity = Math.min(MAX_CART_QUANTITY, (existing?.quantity || 0) + quantity);
+
+    if (existing && existing.quantity >= MAX_CART_QUANTITY) {
+      toast.error(`You can add up to ${MAX_CART_QUANTITY} pieces of the same item.`);
+      return;
+    }
 
     dispatch({ type: 'ADD_ITEM', payload: { product, quantity } });
 
-    const newQuantity = (existing?.quantity || 0) + quantity;
     void (async () => {
       const { error } = await supabase.from('cart_items').upsert(
         {
           user_id: user.id,
           product_id: product.id,
           selected_size: normalizedSize,
-          quantity: newQuantity,
+          quantity: nextQuantity,
         },
         { onConflict: 'user_id,product_id,selected_size' }
       );
@@ -336,11 +344,12 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const updateQuantity = (id: string, size: string, quantity: number) => {
-    dispatch({ type: 'UPDATE_QUANTITY', payload: { id, size, quantity } });
+    dispatch({ type: 'UPDATE_QUANTITY', payload: { id, size, quantity: Math.min(MAX_CART_QUANTITY, quantity) } });
 
     if (user) {
       const normalizedSize = size ?? '';
-      if (quantity <= 0) {
+      const nextQuantity = Math.min(MAX_CART_QUANTITY, quantity);
+      if (nextQuantity <= 0) {
         void (async () => {
           const { error } = await supabase
             .from('cart_items')
@@ -360,7 +369,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
               user_id: user.id,
               product_id: id,
               selected_size: normalizedSize,
-              quantity,
+              quantity: nextQuantity,
             },
             { onConflict: 'user_id,product_id,selected_size' }
           );

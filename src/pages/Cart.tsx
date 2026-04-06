@@ -4,6 +4,8 @@ import { Minus, Plus, X, ArrowLeft } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 import { formatINR } from '../lib/currency';
 
+const MAX_QUANTITY = 5;
+
 const Cart = () => {
   const { items, removeItem, updateQuantity, total } = useCart();
 
@@ -79,17 +81,22 @@ const Cart = () => {
                 <div className="flex items-center space-x-3">
                   <button
                     onClick={() => updateQuantity(item.id, item.selectedSize || '', Math.max(0, item.quantity - 1))}
-                    className="w-9 h-9 border border-neutral-400 rounded flex items-center justify-center bg-white text-neutral-800 hover:bg-neutral-100 transition-colors shadow-sm"
+                    aria-label={`Decrease quantity for ${item.name}`}
+                    title={`Decrease quantity for ${item.name}`}
+                    className="w-9 h-9 border border-neutral-500 rounded flex items-center justify-center bg-white text-neutral-950 hover:bg-neutral-100 transition-colors shadow-sm"
                   >
                     <Minus className="h-4 w-4" />
                   </button>
-                  <div className="flex items-center gap-2 border border-neutral-300 rounded px-2 py-1 bg-white shadow-sm">
-                    <span className="text-[11px] uppercase tracking-wide text-neutral-500">Qty</span>
-                    <span className="text-base font-medium w-6 text-center text-neutral-900">{item.quantity}</span>
+                  <div className="flex items-center gap-2 border border-neutral-400 rounded px-3 py-2 bg-white shadow-sm min-w-[84px] justify-center">
+                    <span className="text-[11px] uppercase tracking-wide text-neutral-600">Qty</span>
+                    <span className="text-base font-semibold w-6 text-center text-neutral-950 opacity-100">{item.quantity}</span>
                   </div>
                   <button
                     onClick={() => updateQuantity(item.id, item.selectedSize || '', item.quantity + 1)}
-                    className="w-9 h-9 border border-neutral-400 rounded flex items-center justify-center bg-white text-neutral-800 hover:bg-neutral-100 transition-colors shadow-sm"
+                    disabled={item.quantity >= MAX_QUANTITY}
+                    aria-label={`Increase quantity for ${item.name}`}
+                    title={item.quantity >= MAX_QUANTITY ? 'Maximum quantity reached' : `Increase quantity for ${item.name}`}
+                    className="w-9 h-9 border border-neutral-500 rounded flex items-center justify-center bg-white text-neutral-950 hover:bg-neutral-100 transition-colors shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     <Plus className="h-4 w-4" />
                   </button>
@@ -98,6 +105,8 @@ const Cart = () => {
                 {/* Remove */}
                 <button
                   onClick={() => removeItem(item.id, item.selectedSize || '')}
+                  aria-label={`Remove ${item.name} from cart`}
+                  title={`Remove ${item.name} from cart`}
                   className="p-2 text-neutral-500 hover:text-red-600 transition-colors"
                 >
                   <X className="h-5 w-5" />

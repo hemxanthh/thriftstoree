@@ -365,7 +365,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         updateProfile,
       }}
     >
-      {!isLoading && children}
+      {children}
     </AuthContext.Provider>
   );
 };
