@@ -1,170 +1,227 @@
-# Supabase Integration Setup
+# Supabase Integration Setup Guide
 
-This guide will help you set up Supabase for your e-commerce application.
+Complete setup instructions for the Thrift Store e-commerce application.
 
 ## 1. Create a Supabase Project
 
-1. Go to [Supabase](https://supabase.com/) and sign up/sign in
-2. Create a new project
-3. Wait for your database to be ready
+1. Go to [Supabase](https://supabase.com/) and create an account
+2. Click "New Project" and fill in the details
+3. Wait for your PostgreSQL database to be provisioned
+4. Note your **Project URL** and **Anon Key** from Settings > API
 
-## 2. Set Up Database Tables
+## 2. Run the Database Schema
 
-Run the following SQL in the Supabase SQL Editor to create the necessary tables:
+1. Go to **SQL Editor** in your Supabase dashboard
+2. Click **New Query**
+3. Copy and paste the entire contents of [`setup-user-profiles.sql`](setup-user-profiles.sql)
+4. Click **Run**
 
-```sql
--- Create products table
-create table products (
-  id uuid default uuid_generate_v4() primary key,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  name text not null,
-  price numeric not null,
-  image text not null,
-  category text not null,
-  description text,
-  is_vintage boolean default false
-);
+This creates:
+- `products` table with full-text search support
+- `user_profiles` table with admin role management
+- `orders` and `order_items` tables for checkout
+- Row-level security (RLS) policies for data access control
+- `product-images` storage bucket for product images
+- Database functions: `is_admin_user()`, `handle_new_user()`, `get_total_revenue()`
 
--- Create user_profiles table
-create table user_profiles (
-  id uuid references auth.users on delete cascade primary key,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  updated_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  full_name text,
-  phone text,
-  avatar_url text,
-  is_admin boolean default false
-);
+## 3. Enable Email Authentication
 
--- Create orders table
-create table orders (
-  id uuid default uuid_generate_v4() primary key,
-  created_at timestamp with time zone default timezone('utc'::text, now()) not null,
-  user_id uuid references auth.users not null,
-  total numeric not null,
-  status text not null default 'pending' check (status in ('pending', 'processing', 'shipped', 'delivered', 'cancelled'))
-);
+1. Go to **Authentication > Providers** in Supabase
+2. Enable the **Email** provider
+3. Configure your site URL and redirect URLs:
+   - **Site URL**: `http://localhost:5173` (for local development)
+   - **Redirect URLs**: Add your production domain later
 
--- Create order_items table
-create table order_items (
-  id uuid default uuid_generate_v4() primary key,
-  order_id uuid references orders not null,
-  product_id uuid references products not null,
-  quantity integer not null,
-  price numeric not null
-);
+## 4. Configure Environment Variables
 
--- Enable Row Level Security
-alter table products enable row level security;
-alter table user_profiles enable row level security;
-alter table orders enable row level security;
-alter table order_items enable row level security;
-
--- Set up RLS policies for products
-create policy "Public products are viewable by everyone." 
-on products for select using (true);
-
--- Set up RLS policies for user_profiles
-create policy "Users can view their own profile." 
-on user_profiles for select using (auth.uid() = id);
-
-create policy "Users can insert their own profile." 
-on user_profiles for insert with check (auth.uid() = id);
-
-create policy "Users can update their own profile." 
-on user_profiles for update using (auth.uid() = id);
-
--- Set up RLS policies for orders
-create policy "Users can view their own orders." 
-on orders for select using (auth.uid() = user_id);
-
-create policy "Users can insert their own orders." 
-on orders for insert with check (auth.uid() = user_id);
-
--- Set up RLS policies for order_items
-create policy "Users can view their own order items." 
-on order_items for select using (
-  exists (
-    select 1 from orders 
-    where orders.id = order_items.order_id 
-    and orders.user_id = auth.uid()
-  )
-);
-
-create policy "Users can insert their own order items." 
-on order_items for insert with check (
-  exists (
-    select 1 from orders 
-    where orders.id = order_items.order_id 
-    and orders.user_id = auth.uid()
-  )
-);
-
--- Create function to automatically create user profile
-create or replace function public.handle_new_user() 
-returns trigger as $$
-begin
-  insert into public.user_profiles (id, full_name, created_at, updated_at)
-  values (new.id, new.raw_user_meta_data->>'full_name', now(), now());
-  return new;
-end;
-$$ language plpgsql security definer;
-
--- Create trigger to automatically create user profile
-create trigger on_auth_user_created
-  after insert on auth.users
-  for each row execute procedure public.handle_new_user();
-```
-
-## 3. Set Up Authentication
-
-1. Go to Authentication > Providers in the Supabase dashboard
-2. Enable "Email" provider
-3. Configure the site URL and redirect URLs
-
-## 4. Set Up Environment Variables
-
-1. Create a `.env.local` file in your project root, or copy the values from `.env.example`
-2. Add your Supabase URL and anon key:
+Create a `.env.local` file in your project root:
 
 ```env
-VITE_SUPABASE_URL=your-supabase-url
-VITE_SUPABASE_ANON_KEY=your-supabase-anon-key
+VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=your-anon-key-here
 ```
 
-You can find these values in your Supabase project settings > API. The workspace is currently configured for the project in `.env.local`.
+**Find these in**: Supabase Project Settings > API > Project URL and anon key
 
-## 5. Import Initial Data (Optional)
+## 5. ⚠️ CRITICAL: Set Up Admin Access
 
-If you want to import the sample products, you can use the Supabase dashboard:
+This is the most important step! Without this, you'll get "row-level security policy" errors when trying to add products.
 
-1. Go to Table Editor > products
-2. Click "Import data from CSV"
-3. Use the sample data from `src/data/products.ts`
+### Option A: Via SQL (Recommended)
 
-## 6. Start the Development Server
+1. Go back to **SQL Editor** in Supabase
+2. Run this query to find your user ID:
+
+```sql
+SELECT auth.uid() as your_user_id, id, email, is_admin, role FROM public.user_profiles WHERE id = auth.uid();
+```
+
+3. Copy your `user_id` from the results
+4. Run this query (replace the UUID with your actual user_id):
+
+```sql
+UPDATE public.user_profiles 
+SET is_admin = true, role = 'admin' 
+WHERE id = 'YOUR-USER-ID-HERE';
+```
+
+5. Verify it worked:
+
+```sql
+SELECT public.is_admin_user() as am_i_admin;
+```
+
+Should return `true`.
+
+### Option B: Via Supabase Dashboard
+
+1. Go to **Table Editor** > **user_profiles**
+2. Find the row with your email
+3. Click to edit it
+4. Set `is_admin = true` and `role = 'admin'`
+5. Click Save
+
+## 6. Troubleshooting Admin Access
+
+### Problem: "new row violates row-level security policy" when adding products
+
+**Solution**: You haven't been marked as admin yet. Follow Section 5 above.
+
+### Problem: Can't see user_profiles table
+
+**Solution**: RLS is blocking the view. Run this in SQL Editor:
+
+```sql
+SELECT id, email, is_admin, role FROM public.user_profiles;
+```
+
+### Problem: Admin dashboard is not accessible
+
+**Solution**: 
+
+1. Refresh the browser after setting `is_admin = true`
+2. Sign out and sign back in
+3. Check that you can see the Admin Dashboard link in your user menu (top right)
+
+### Got "row-level security policy" error after setting admin?
+
+Run this verification query:
+
+```sql
+-- Check if you're actually marked as admin
+SELECT id, email, is_admin, role FROM public.user_profiles WHERE id = auth.uid();
+
+-- Check if the is_admin_user() function works
+SELECT public.is_admin_user() as result;
+
+-- Check the products RLS policy
+SELECT * FROM public.products LIMIT 1;
+```
+
+## 7. Set Up Storage for Product Images
+
+1. Go to **Storage** in the Supabase dashboard
+2. Verify the `product-images` bucket exists
+3. Click the bucket name
+4. Go to **Policies** tab
+5. Verify these policies exist:
+   - "Public product images are viewable by everyone" (SELECT for all)
+   - "Admins can upload product images" (INSERT for admins)
+   - "Admins can update product images" (UPDATE for admins)
+   - "Admins can delete product images" (DELETE for admins)
+
+## 8. Start the Development Server
 
 ```bash
 npm install
 npm run dev
 ```
 
-## Available Hooks and Utilities
+Then visit `http://localhost:5173`
 
-- `useSupabase()`: Hook to access Supabase auth and user context
-- `supabase`: Direct Supabase client for database operations
-- `fetchProducts()`: Fetch all products
-- `fetchProductById(id)`: Fetch a single product by ID
-- `fetchProductsByCategory(category)`: Fetch products by category
-- `searchProducts(query)`: Search products by name or description
+## 9. Test Admin Features
 
-## Authentication
+1. **Sign up** with an email account at `/register`
+2. **Log in** at `/login`
+3. Set yourself as admin (Section 5)
+4. Refresh and click your user avatar (top right)
+5. You should see **"Admin Dashboard"** option
+6. Go to Admin Dashboard > Products and try adding a new product
+7. Fill in the form and upload an image
+8. Click "Add Product"
+9. You should see it appear instantly in the shop!
 
-The app includes built-in authentication with the following methods:
+## 10. Deploy to Production
 
-- `signIn(email, password)`: Sign in with email and password
-- `signUp(email, password)`: Create a new account
-- `signOut()`: Sign out the current user
+### Set GitHub Secrets (if using GitHub Actions)
+
+1. Go to your GitHub repo > Settings > Secrets and variables > Actions
+2. Add these secrets:
+   - `VITE_SUPABASE_URL`: Your Supabase project URL
+   - `VITE_SUPABASE_ANON_KEY`: Your anon key
+
+### Update Supabase Settings
+
+1. Go to Supabase > Authentication > Providers > Email
+2. Update **Redirect URLs** to include your production domain:
+   - `https://yourdomain.com/auth/callback`
+
+## Helpful Database Queries
+
+```sql
+-- See all current admins
+SELECT id, email, is_admin, role FROM public.user_profiles WHERE is_admin = true;
+
+-- Count total products
+SELECT COUNT(*) FROM public.products;
+
+-- See all orders
+SELECT id, user_id, total, status, created_at FROM public.orders;
+
+-- Get revenue from confirmed orders
+SELECT public.get_total_revenue();
+
+-- Debug: See which policies are enabled
+SELECT * FROM information_schema.role_table_grants WHERE table_name = 'products';
+```
+
+## Available APIs
+
+### Authentication
+- `signUp(email, password)` - Create new account
+- `signIn(email, password)` - Sign in
+- `signOut()` - Sign out
+- `useAuth()` - React hook for current user
+
+### Cart
+- `useCart()` - React hook for cart state
+- Cart is automatically persisted to localStorage per user
+
+### Products
+- `fetchProducts()` - Get all products
+- `fetchProductById(id)` - Get single product
+- `fetchProductsByCategory(category)` - Filter by category  
+- `searchProducts(query)` - Full-text search
+
+### Admin
+- `/admin` - Dashboard
+- `/admin/products` - Product management
+- `/admin/products/new` - Add product
+- `/admin/products/edit/:id` - Edit product
+- `/admin/orders` - Order management
+- `/admin/users` - User management
+
+## Common Issues
+
+| Issue | Solution |
+|-------|----------|
+| Products page is blank | Run the schema SQL, wait 5 seconds, refresh |
+| Cart doesn't persist | Check browser console for errors, clear localStorage |
+| Can't log in | Check email is correct, verify authentication is enabled |
+| Admin dashboard 404 | Refresh after being set as admin, check user menu |
+| Image upload fails | Verify Storage policies, check file is under 5MB |
+
+For more help, check the [setup-user-profiles.sql](setup-user-profiles.sql) file for the full schema definition.
 
 ## Next Steps
 

@@ -40,42 +40,43 @@ const FAQ = () => {
   ];
 
   return (
-    <div className="pt-16">
-      {/* Header */}
-      <section className="py-16 bg-neutral-50">
+    <div className="pt-16 bg-neutral-100">
+      <section className="py-24 bg-neutral-950 text-white border-b border-neutral-800">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-          <h1 className="text-4xl font-light text-neutral-900 tracking-tight mb-6">
-            Frequently Asked Questions
-          </h1>
-          <p className="text-lg text-neutral-600">
-            Everything you need to know about shopping vintage with us
+          <p className="text-[11px] tracking-[0.24em] uppercase text-neutral-400 mb-6">Help Center</p>
+          <h1 className="text-4xl sm:text-6xl font-light tracking-tight mb-7">Frequently Asked Questions</h1>
+          <p className="text-lg sm:text-xl text-neutral-300 leading-relaxed">
+            Quick answers to the most common questions about orders, returns, and sourcing.
           </p>
         </div>
       </section>
 
-      {/* FAQ Section */}
-      <section className="py-16 bg-white">
+      <section className="py-20 sm:py-24 bg-neutral-100">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="space-y-4">
+          <div className="space-y-4 sm:space-y-5">
             {faqs.map((faq, index) => (
-              <div key={index} className="border border-neutral-200 rounded-lg">
+              <article
+                key={index}
+                className="rounded-xl border border-neutral-200 bg-white shadow-sm overflow-hidden"
+              >
                 <button
                   onClick={() => setOpenItem(openItem === index ? null : index)}
-                  className="w-full px-6 py-4 text-left flex items-center justify-between hover:bg-neutral-50 transition-colors"
+                  className="w-full px-6 sm:px-7 py-5 sm:py-6 text-left flex items-center justify-between gap-5 hover:bg-neutral-50 transition-colors"
                 >
-                  <span className="font-medium text-neutral-900">{faq.question}</span>
+                  <span className="font-medium text-neutral-900 text-base sm:text-lg">{faq.question}</span>
                   {openItem === index ? (
-                    <ChevronUp className="h-5 w-5 text-neutral-500" />
+                    <ChevronUp className="h-5 w-5 text-neutral-500 flex-shrink-0" />
                   ) : (
-                    <ChevronDown className="h-5 w-5 text-neutral-500" />
+                    <ChevronDown className="h-5 w-5 text-neutral-500 flex-shrink-0" />
                   )}
                 </button>
+
                 {openItem === index && (
-                  <div className="px-6 pb-4">
-                    <p className="text-neutral-600 leading-relaxed">{faq.answer}</p>
+                  <div className="px-6 sm:px-7 pb-6 sm:pb-7 border-t border-neutral-200 bg-neutral-50/70">
+                    <p className="text-neutral-700 leading-relaxed text-[15px] sm:text-base pt-4">{faq.answer}</p>
                   </div>
                 )}
-              </div>
+              </article>
             ))}
           </div>
         </div>

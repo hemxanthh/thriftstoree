@@ -50,32 +50,27 @@ const Products = () => {
     
     load();
 
+    const refreshProducts = () => {
+      void load();
+    };
+
+    window.addEventListener('products:changed', refreshProducts);
+
     // Keep URL in sync when selectedCategory changes
     const params = new URLSearchParams(searchParams.toString());
     if (selectedCategory === 'all') params.delete('category');
     else params.set('category', selectedCategory);
     setSearchParams(params, { replace: true });
 
-    // Only set up realtime if we have products (indicating Supabase works)
-    const setupRealtime = async () => {
-      setTimeout(() => {
-        if (mounted && products.length > 0) {
-          console.log('Setting up products realtime subscription...');
-          channel = supabase
-            .channel('products-page')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, load)
-            .subscribe();
-        } else {
-          console.log('Skipping products realtime subscription - no products loaded');
-        }
-      }, 2000);
-    };
-    
-    setupRealtime();
+    channel = supabase
+      .channel('products-page')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'products' }, refreshProducts)
+      .subscribe();
 
     return () => {
       mounted = false;
       clearTimeout(timeoutId);
+      window.removeEventListener('products:changed', refreshProducts);
       if (channel) {
         console.log('Cleaning up products realtime subscription');
         supabase.removeChannel(channel);
@@ -150,6 +145,7 @@ const Products = () => {
               <select
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value)}
+                title="Sort products"
                 className="px-4 py-2 border border-neutral-300 rounded text-sm bg-white focus:outline-none focus:ring-2 focus:ring-neutral-900"
               >
                 <option value="newest">Newest First</option>

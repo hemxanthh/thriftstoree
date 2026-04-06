@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '../../lib/supabase';
-import { Link } from 'react-router-dom';
+import { Search, Users as UsersIcon } from 'lucide-react';
 
 interface UserProfile {
   id: string;
@@ -46,7 +46,6 @@ export default function Users() {
 
     fetchUsers();
 
-    // Subscribe to realtime changes
     const channel = supabase
       .channel('users-admin')
       .on(
@@ -64,76 +63,117 @@ export default function Users() {
     };
   }, []);
 
-  return (
-    <div className="max-w-7xl mx-auto p-4 sm:p-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold text-gray-900">Users</h1>
-        <Link to="/admin" className="text-indigo-600 hover:text-indigo-800 text-sm">
-          Back to Dashboard
-        </Link>
-      </div>
-
-      <div className="mt-6">
-        <div className="flex items-center gap-3">
-          <input
-            type="text"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by name or email..."
-            className="w-full sm:w-80 rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500"
-          />
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-amber-50 to-slate-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-amber-600 mx-auto mb-4"></div>
+          <p className="text-slate-600">Loading users...</p>
         </div>
       </div>
+    );
+  }
 
-      <div className="mt-6 bg-white shadow ring-1 ring-black ring-opacity-5 rounded-lg overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Full Name</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
-              <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Joined</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {loading && (
-              <tr>
-                <td colSpan={4} className="px-4 py-8 text-center text-gray-500">
-                  Loading users...
-                </td>
-              </tr>
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-amber-50 to-slate-100 p-6">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <div className="flex items-center gap-3 mb-2">
+            <UsersIcon className="w-8 h-8 text-amber-600" />
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-amber-900 to-amber-700 bg-clip-text text-transparent">
+              Users Management
+            </h1>
+          </div>
+          <p className="text-slate-600">View and manage all registered users</p>
+        </div>
+
+        {/* Search Bar */}
+        <div className="mb-8">
+          <div className="relative">
+            <Search className="absolute left-4 top-3 text-slate-400 w-5 h-5" />
+            <input
+              type="text"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search by name or email..."
+              className="w-full pl-12 pr-4 py-3 bg-white/80 border border-slate-200 rounded-xl focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-200 text-slate-900 placeholder-slate-500 backdrop-blur transition"
+            />
+          </div>
+        </div>
+
+        {/* Error State */}
+        {error && (
+          <div className="bg-red-50/50 backdrop-blur border border-red-200/30 rounded-2xl p-6 text-red-700 mb-8">
+            <p className="font-medium">{error}</p>
+          </div>
+        )}
+
+        {/* Table */}
+        {!error && (
+          <div className="bg-white/50 backdrop-blur border border-white/20 rounded-2xl overflow-hidden shadow-lg hover:shadow-xl transition">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-white/20 bg-white/30">
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Email</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Full Name</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Role</th>
+                    <th className="px-6 py-4 text-left text-sm font-semibold text-slate-700">Joined</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtered.length === 0 ? (
+                    <tr>
+                      <td colSpan={4} className="px-6 py-12 text-center text-slate-500">
+                        <p className="text-lg font-medium">No users found</p>
+                        <p className="text-sm mt-1">Try adjusting your search terms</p>
+                      </td>
+                    </tr>
+                  ) : (
+                    filtered.map((u, index) => (
+                      <tr
+                        key={u.id}
+                        className={`border-b border-white/10 ${index % 2 === 0 ? 'bg-white/20' : 'bg-white/10'} hover:bg-white/40 transition`}
+                      >
+                        <td className="px-6 py-4 text-sm text-slate-900 font-medium">{u.email}</td>
+                        <td className="px-6 py-4 text-sm text-slate-700">{u.full_name || '-'}</td>
+                        <td className="px-6 py-4">
+                          <span
+                            className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
+                              u.role === 'admin'
+                                ? 'bg-amber-100/50 text-amber-700'
+                                : 'bg-slate-100/50 text-slate-700'
+                            }`}
+                          >
+                            {u.role || 'user'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 text-sm text-slate-600">
+                          {new Date(u.created_at).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric',
+                          })}
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Footer Stats */}
+            {filtered.length > 0 && (
+              <div className="bg-white/30 border-t border-white/20 px-6 py-4 flex items-center justify-between">
+                <p className="text-sm text-slate-600">
+                  Showing <span className="font-semibold text-slate-900">{filtered.length}</span> of{' '}
+                  <span className="font-semibold text-slate-900">{users.length}</span> users
+                </p>
+              </div>
             )}
-            {error && !loading && (
-              <tr>
-                <td colSpan={4} className="px-4 py-8 text-center text-red-600">
-                  {error}
-                </td>
-              </tr>
-            )}
-            {!loading && !error && filtered.length === 0 && (
-              <tr>
-                <td colSpan={4} className="px-4 py-8 text-center text-gray-500">
-                  No users found
-                </td>
-              </tr>
-            )}
-            {!loading && !error &&
-              filtered.map((u) => (
-                <tr key={u.id}>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-900">{u.email}</td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-700">{u.full_name || '-'}</td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm">
-                    <span className="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-medium bg-indigo-100 text-indigo-800">
-                      {u.role || 'user'}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
-                    {new Date(u.created_at).toLocaleString()}
-                  </td>
-                </tr>
-              ))}
-          </tbody>
-        </table>
+          </div>
+        )}
       </div>
     </div>
   );

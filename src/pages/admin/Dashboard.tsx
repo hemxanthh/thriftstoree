@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { supabase } from '../../lib/supabase';
 import { formatINR } from '../../lib/currency';
+import { Users, Package, ShoppingCart, TrendingUp, LogOut, ChevronRight } from 'lucide-react';
 
 const Dashboard = () => {
   const { user, signOut } = useAuth();
@@ -30,7 +31,6 @@ const Dashboard = () => {
       try {
         setIsLoading(true);
         
-        // Fetch stats
         const [
           { count: usersCount },
           { count: productsCount },
@@ -66,7 +66,6 @@ const Dashboard = () => {
 
     fetchDashboardData();
 
-    // Realtime subscriptions to auto-refresh dashboard
     const channel = supabase
       .channel('dashboard-realtime')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'orders' }, fetchDashboardData)
@@ -82,24 +81,39 @@ const Dashboard = () => {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-indigo-500"></div>
+      <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 flex items-center justify-center">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border border-white/30 border-t-white"></div>
+          <p className="mt-4 text-white/60 font-medium">Loading dashboard...</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 relative overflow-hidden">
+      {/* Animated background elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-cyan-500/5 rounded-full blur-3xl"></div>
+        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-purple-500/5 rounded-full blur-3xl"></div>
+      </div>
+
       {/* Header */}
-      <header className="bg-white shadow">
+      <header className="sticky top-0 z-40 backdrop-blur-xl bg-white/5 border-b border-white/10 shadow-lg">
         <div className="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
-          <h1 className="text-3xl font-bold text-gray-900">Admin Dashboard</h1>
+          <div>
+            <h1 className="text-3xl font-bold text-white">Dashboard</h1>
+            <p className="text-white/50 text-sm mt-1">Admin Portal</p>
+          </div>
           <div className="flex items-center space-x-4">
-            <span className="text-sm text-gray-600">Welcome, {user?.email}</span>
+            <div className="px-4 py-2 rounded-lg bg-white/5 border border-white/10 backdrop-blur">
+              <p className="text-sm text-white/70">{user?.email}</p>
+            </div>
             <button
               onClick={handleSignOut}
-              className="px-4 py-2 text-sm font-medium text-white bg-red-600 rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+              className="px-4 py-2 text-sm font-medium text-white bg-white/10 hover:bg-white/20 rounded-lg border border-white/20 hover:border-white/30 transition-all backdrop-blur flex items-center gap-2 group"
             >
+              <LogOut className="h-4 w-4 group-hover:rotate-180 transition-transform" />
               Sign Out
             </button>
           </div>
@@ -107,213 +121,164 @@ const Dashboard = () => {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        {/* Stats */}
-        <div className="grid grid-cols-1 gap-5 mt-6 sm:grid-cols-2 lg:grid-cols-4">
+      <main className="max-w-7xl mx-auto py-8 sm:px-6 lg:px-8 relative z-10">
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4 mb-8">
           {/* Total Users */}
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="px-4 py-5 sm:p-6">
-              <div className="flex items-center">
-                <div className="flex-shrink-0 bg-indigo-500 rounded-md p-3">
-                  <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                  </svg>
+          <div className="group">
+            <div className="h-full p-6 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl border border-white/20 hover:border-white/40 hover:bg-white/15 transition-all duration-300 hover:shadow-2xl hover:shadow-cyan-500/10">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 rounded-xl bg-gradient-to-br from-cyan-500/30 to-blue-500/20 backdrop-blur border border-cyan-400/30">
+                  <Users className="h-5 w-5 text-cyan-300" />
                 </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Total Users</dt>
-                    <dd className="flex items-baseline">
-                      <div className="text-2xl font-semibold text-gray-900">{stats.totalUsers}</div>
-                    </dd>
-                  </dl>
-                </div>
+                <TrendingUp className="h-4 w-4 text-green-400/50" />
               </div>
+              <p className="text-white/60 text-sm font-medium">Total Users</p>
+              <p className="text-4xl font-bold text-white mt-2">{stats.totalUsers}</p>
+              <p className="text-xs text-white/40 mt-2">Active members</p>
             </div>
           </div>
 
           {/* Total Products */}
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="px-4 py-5 sm:p-6">
-              <div className="flex items-center">
-                <div className="flex-shrink-0 bg-green-500 rounded-md p-3">
-                  <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20 7l-8-4.5L4 7m16 0l-8 4.5M4 7v10l8 4.5m0-14.5v14.5m8-10l-8 4.5m0 0L4 14.5" />
-                  </svg>
+          <div className="group">
+            <div className="h-full p-6 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl border border-white/20 hover:border-white/40 hover:bg-white/15 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/10">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 rounded-xl bg-gradient-to-br from-purple-500/30 to-pink-500/20 backdrop-blur border border-purple-400/30">
+                  <Package className="h-5 w-5 text-purple-300" />
                 </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Total Products</dt>
-                    <dd className="flex items-baseline">
-                      <div className="text-2xl font-semibold text-gray-900">{stats.totalProducts}</div>
-                    </dd>
-                  </dl>
-                </div>
+                <TrendingUp className="h-4 w-4 text-green-400/50" />
               </div>
+              <p className="text-white/60 text-sm font-medium">Total Products</p>
+              <p className="text-4xl font-bold text-white mt-2">{stats.totalProducts}</p>
+              <p className="text-xs text-white/40 mt-2">In inventory</p>
             </div>
           </div>
 
           {/* Total Orders */}
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="px-4 py-5 sm:p-6">
-              <div className="flex items-center">
-                <div className="flex-shrink-0 bg-yellow-500 rounded-md p-3">
-                  <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                  </svg>
+          <div className="group">
+            <div className="h-full p-6 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl border border-white/20 hover:border-white/40 hover:bg-white/15 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/10">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500/30 to-cyan-500/20 backdrop-blur border border-blue-400/30">
+                  <ShoppingCart className="h-5 w-5 text-blue-300" />
                 </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Total Orders</dt>
-                    <dd className="flex items-baseline">
-                      <div className="text-2xl font-semibold text-gray-900">{stats.totalOrders}</div>
-                    </dd>
-                  </dl>
-                </div>
+                <TrendingUp className="h-4 w-4 text-green-400/50" />
               </div>
+              <p className="text-white/60 text-sm font-medium">Total Orders</p>
+              <p className="text-4xl font-bold text-white mt-2">{stats.totalOrders}</p>
+              <p className="text-xs text-white/40 mt-2">All time</p>
             </div>
           </div>
 
           {/* Total Revenue */}
-          <div className="bg-white overflow-hidden shadow rounded-lg">
-            <div className="px-4 py-5 sm:p-6">
-              <div className="flex items-center">
-                <div className="flex-shrink-0 bg-purple-500 rounded-md p-3">
-                  <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
+          <div className="group">
+            <div className="h-full p-6 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl border border-white/20 hover:border-white/40 hover:bg-white/15 transition-all duration-300 hover:shadow-2xl hover:shadow-green-500/10">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 rounded-xl bg-gradient-to-br from-green-500/30 to-emerald-500/20 backdrop-blur border border-green-400/30">
+                  <TrendingUp className="h-5 w-5 text-green-300" />
                 </div>
-                <div className="ml-5 w-0 flex-1">
-                  <dl>
-                    <dt className="text-sm font-medium text-gray-500 truncate">Total Revenue</dt>
-                    <dd className="flex items-baseline">
-                      <div className="text-2xl font-semibold text-gray-900">
-                        {formatINR(stats.totalRevenue)}
-                      </div>
-                    </dd>
-                  </dl>
-                </div>
+                <div className="text-sm font-medium text-green-400">+12%</div>
               </div>
+              <p className="text-white/60 text-sm font-medium">Total Revenue</p>
+              <p className="text-3xl font-bold text-white mt-2">{formatINR(stats.totalRevenue)}</p>
+              <p className="text-xs text-white/40 mt-2">Monthly income</p>
             </div>
           </div>
         </div>
 
-        {/* Recent Orders */}
-        <div className="mt-8">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">Recent Orders</h2>
-          <div className="bg-white shadow overflow-hidden sm:rounded-md">
-            <ul className="divide-y divide-gray-200">
-              {recentOrders.length > 0 ? (
-                recentOrders.map((order) => (
-                  <li key={order.id}>
-                    <Link to={`/admin/orders`} className="block hover:bg-gray-50">
-                      <div className="px-4 py-4 sm:px-6">
-                        <div className="flex items-center justify-between">
-                          <p className="text-sm font-medium text-indigo-600 truncate">
-                            Order #{order.id.substring(0, 8)}
-                          </p>
-                          <div className="ml-2 flex-shrink-0 flex">
-                            <p className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                              {order.status}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="mt-2 sm:flex sm:justify-between">
-                          <div className="sm:flex">
-                            <p className="flex items-center text-sm text-gray-500">
-                              {order.order_items?.length} items
-                            </p>
-                          </div>
-                          <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
-                            <p>
-                              {formatINR(order.total)}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="mt-2">
-                          <p className="text-xs text-gray-500">
-                            {new Date(order.created_at).toLocaleDateString()}
-                          </p>
-                        </div>
-                      </div>
-                    </Link>
-                  </li>
-                ))
-              ) : (
-                <li className="px-4 py-6 text-center text-gray-500">
-                  No recent orders
-                </li>
-              )}
-            </ul>
+        {/* Recent Orders Section */}
+        <div className="mb-8">
+          <div className="p-6 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl border border-white/20 hover:border-white/30 transition-all">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-lg font-bold text-white">Recent Orders</h2>
+              <Link to="/admin/orders" className="text-xs text-cyan-400 hover:text-cyan-300 flex items-center gap-1 transition-colors">
+                View All <ChevronRight className="h-3 w-3" />
+              </Link>
+            </div>
+            
+            {recentOrders.length > 0 ? (
+              <div className="space-y-3">
+                {recentOrders.map((order) => (
+                  <Link
+                    key={order.id}
+                    to="/admin/orders"
+                    className="group p-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 transition-all backdrop-blur flex items-center justify-between cursor-pointer"
+                  >
+                    <div className="flex-1">
+                      <p className="text-sm font-semibold text-cyan-300">
+                        Order #{order.id.substring(0, 8)}
+                      </p>
+                      <p className="text-xs text-white/40 mt-1">
+                        {order.order_items?.length} items • {new Date(order.created_at).toLocaleDateString()}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      <p className="text-sm font-semibold text-white">{formatINR(order.total)}</p>
+                      <span className={`px-3 py-1 rounded-full text-xs font-medium backdrop-blur border ${
+                        order.status === 'paid' ? 'bg-green-500/20 text-green-300 border-green-500/30' :
+                        order.status === 'pending' ? 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30' :
+                        order.status === 'shipped' ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' :
+                        'bg-white/10 text-white/60 border-white/20'
+                      }`}>
+                        {order.status}
+                      </span>
+                    </div>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="py-12 text-center">
+                <p className="text-white/40">No recent orders</p>
+              </div>
+            )}
           </div>
         </div>
 
         {/* Quick Actions */}
-        <div className="mt-8">
-          <h2 className="text-lg font-medium text-gray-900 mb-4">Quick Actions</h2>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div>
+          <h2 className="text-lg font-bold text-white mb-4">Quick Actions</h2>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <Link
+              to="/admin/products/new"
+              className="group p-6 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl border border-white/20 hover:border-white/40 hover:bg-white/15 transition-all duration-300 hover:shadow-2xl hover:shadow-cyan-500/10"
+            >
+              <div className="p-3 rounded-xl bg-gradient-to-br from-cyan-500/30 to-blue-500/20 backdrop-blur border border-cyan-400/30 w-fit group-hover:scale-110 transition-transform">
+                <Package className="h-5 w-5 text-cyan-300" />
+              </div>
+              <p className="text-sm font-semibold text-white mt-4">Add Product</p>
+              <p className="text-xs text-white/40 mt-1">Create new item</p>
+            </Link>
+
             <Link
               to="/admin/products"
-              className="relative rounded-lg border border-gray-300 bg-white px-6 py-5 shadow-sm flex items-center space-x-3 hover:border-gray-400 focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
+              className="group p-6 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl border border-white/20 hover:border-white/40 hover:bg-white/15 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-500/10"
             >
-              <div className="flex-shrink-0 bg-indigo-500 rounded-md p-3">
-                <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                </svg>
+              <div className="p-3 rounded-xl bg-gradient-to-br from-purple-500/30 to-pink-500/20 backdrop-blur border border-purple-400/30 w-fit group-hover:scale-110 transition-transform">
+                <Package className="h-5 w-5 text-purple-300" />
               </div>
-              <div className="flex-1 min-w-0">
-                <span className="absolute inset-0" aria-hidden="true" />
-                <p className="text-sm font-medium text-gray-900">Manage Products</p>
-                <p className="text-sm text-gray-500 truncate">Add, edit, or delete products</p>
-              </div>
+              <p className="text-sm font-semibold text-white mt-4">Manage Products</p>
+              <p className="text-xs text-white/40 mt-1">Edit or delete</p>
             </Link>
 
             <Link
               to="/admin/users"
-              className="relative rounded-lg border border-gray-300 bg-white px-6 py-5 shadow-sm flex items-center space-x-3 hover:border-gray-400 focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
+              className="group p-6 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl border border-white/20 hover:border-white/40 hover:bg-white/15 transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/10"
             >
-              <div className="flex-shrink-0 bg-green-500 rounded-md p-3">
-                <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
+              <div className="p-3 rounded-xl bg-gradient-to-br from-blue-500/30 to-cyan-500/20 backdrop-blur border border-blue-400/30 w-fit group-hover:scale-110 transition-transform">
+                <Users className="h-5 w-5 text-blue-300" />
               </div>
-              <div className="flex-1 min-w-0">
-                <span className="absolute inset-0" aria-hidden="true" />
-                <p className="text-sm font-medium text-gray-900">Manage Users</p>
-                <p className="text-sm text-gray-500 truncate">View and manage user accounts</p>
-              </div>
+              <p className="text-sm font-semibold text-white mt-4">Manage Users</p>
+              <p className="text-xs text-white/40 mt-1">View accounts</p>
             </Link>
 
             <Link
               to="/admin/orders"
-              className="relative rounded-lg border border-gray-300 bg-white px-6 py-5 shadow-sm flex items-center space-x-3 hover:border-gray-400 focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
+              className="group p-6 rounded-2xl bg-gradient-to-br from-white/10 to-white/5 backdrop-blur-xl border border-white/20 hover:border-white/40 hover:bg-white/15 transition-all duration-300 hover:shadow-2xl hover:shadow-green-500/10"
             >
-              <div className="flex-shrink-0 bg-yellow-500 rounded-md p-3">
-                <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                </svg>
+              <div className="p-3 rounded-xl bg-gradient-to-br from-green-500/30 to-emerald-500/20 backdrop-blur border border-green-400/30 w-fit group-hover:scale-110 transition-transform">
+                <ShoppingCart className="h-5 w-5 text-green-300" />
               </div>
-              <div className="flex-1 min-w-0">
-                <span className="absolute inset-0" aria-hidden="true" />
-                <p className="text-sm font-medium text-gray-900">Manage Orders</p>
-                <p className="text-sm text-gray-500 truncate">Track and update order statuses</p>
-              </div>
-            </Link>
-
-            <Link
-              to="/admin/settings"
-              className="relative rounded-lg border border-gray-300 bg-white px-6 py-5 shadow-sm flex items-center space-x-3 hover:border-gray-400 focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500"
-            >
-              <div className="flex-shrink-0 bg-yellow-500 rounded-md p-3">
-                <svg className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-              </div>
-              <div className="flex-1 min-w-0">
-                <span className="absolute inset-0" aria-hidden="true" />
-                <p className="text-sm font-medium text-gray-900">Store Settings</p>
-                <p className="text-sm text-gray-500 truncate">Configure store preferences</p>
-              </div>
+              <p className="text-sm font-semibold text-white mt-4">Manage Orders</p>
+              <p className="text-xs text-white/40 mt-1">Track status</p>
             </Link>
           </div>
         </div>
