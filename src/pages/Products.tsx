@@ -38,16 +38,7 @@ const Products = () => {
         if (mounted) setLoading(false);
       }
     };
-    
-    // Add timeout to ensure loading state doesn't hang
-    const timeoutId = setTimeout(() => {
-      if (mounted && loading) {
-        console.warn('Products: Product loading timed out');
-        setLoading(false);
-        setProducts([]);
-      }
-    }, 10000); // Reduced timeout
-    
+
     load();
 
     const refreshProducts = () => {
@@ -57,10 +48,13 @@ const Products = () => {
     window.addEventListener('products:changed', refreshProducts);
 
     // Keep URL in sync when selectedCategory changes
-    const params = new URLSearchParams(searchParams.toString());
-    if (selectedCategory === 'all') params.delete('category');
-    else params.set('category', selectedCategory);
-    setSearchParams(params, { replace: true });
+    const currentCategory = searchParams.get('category') || 'all';
+    if (currentCategory !== selectedCategory) {
+      const params = new URLSearchParams(searchParams.toString());
+      if (selectedCategory === 'all') params.delete('category');
+      else params.set('category', selectedCategory);
+      setSearchParams(params, { replace: true });
+    }
 
     channel = supabase
       .channel('products-page')
@@ -69,7 +63,6 @@ const Products = () => {
 
     return () => {
       mounted = false;
-      clearTimeout(timeoutId);
       window.removeEventListener('products:changed', refreshProducts);
       if (channel) {
         console.log('Cleaning up products realtime subscription');
